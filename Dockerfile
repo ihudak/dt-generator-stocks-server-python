@@ -3,6 +3,6 @@ LABEL authors="ivan.gudak"
 RUN mkdir -p /opt/app
 WORKDIR /opt/app
 COPY ./ .
-RUN source ./venv/Scripts/activate && pip install -r ./requirements.txt
-ENTRYPOINT source ./venv/bin/activate && python ./stock_server.py
+RUN pip install -r ./requirements.txt
+ENTRYPOINT ["python", "./stock_server.py"]
 EXPOSE 8080
