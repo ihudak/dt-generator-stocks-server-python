@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+  namespace: stocks
+  labels:
+    app: client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: client
+  template:
+    metadata:
+      annotations:
+        metrics.dynatrace.com/path: /stats/prometheus
+        metrics.dynatrace.com/port: "15020"
+        metrics.dynatrace.com/scrape: "true"
+        metrics.dynatrace.com/secure: "false"
+      namespace: stocks
+      labels:
+        app: client
+        app.kubernetes.io/version: 1.5.5
+        app.kubernetes.io/part-of: StocksManagement
+    spec:
+      containers:
+        - name: client
+          image: ghcr.io/ihudak/dt-generator-stocks-client-python:latest
+          ports:
+            - containerPort: 8080
+            - containerPort: 5005
+          envFrom:
+            - configMapRef:
+                name: stocks-configmap
+          env:
+            - name: SRVURL
+              value: "stocks-server-svc:80"
+            - name: NUMLOOPS
+              value: "1000"
+          resources:
+            limits:
+              cpu: 300m
+              memory: 768Mi
+            requests:
+              cpu: 300m
+              memory: 768Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stocks-client-svc
+  namespace: stocks
+spec:
+  selector:
+    app: client
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 8080

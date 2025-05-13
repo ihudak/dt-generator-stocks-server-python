@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: stocks-configmap
+  namespace: stocks
+data:
+  SRVURL: "stocks-server-svc:80"
+  NUMLOOPS: "10"
