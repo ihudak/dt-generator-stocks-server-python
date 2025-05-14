@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: pguser
+      POSTGRES_PASSWORD: p@ssw0rD!
+      POSTGRES_DB: dt_stocks
+    ports:
+      - 5432:5432
+
+  adminer:
+    image: adminer
+    restart: always
+    environment:
+      POSTGRES_USER: pguser
+      POSTGRES_PASSWORD: p@ssw0rD!
+      POSTGRES_DB: dt_stocks
+    ports:
+      - 8081:8080

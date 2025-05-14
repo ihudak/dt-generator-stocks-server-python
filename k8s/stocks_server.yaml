@@ -32,6 +32,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: stocks-configmap
+            - secretRef:
+                name: stocks-secret
           resources:
             limits:
               cpu: 300m

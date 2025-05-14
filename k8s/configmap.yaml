@@ -4,5 +4,12 @@ metadata:
   name: stocks-configmap
   namespace: stocks
 data:
+  DB_NAME: "dt_stocks"
   SRVURL: "stocks-server-svc:80"
-  NUMLOOPS: "10"
+  NUMLOOPS: 100
+  CREATESTOCKS: 100
+  INITSTOCKS: 10000
+  MAXSTOCKS: 100000
+  HARDWORK_INTENSITY: 100
+  DBSRV: "postgres-svc"
+  DBPORT: 5432

@@ -32,11 +32,6 @@ spec:
           envFrom:
             - configMapRef:
                 name: stocks-configmap
-          env:
-            - name: SRVURL
-              value: "stocks-server-svc:80"
-            - name: NUMLOOPS
-              value: "1000"
           resources:
             limits:
               cpu: 300m
