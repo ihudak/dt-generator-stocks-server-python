@@ -8,10 +8,10 @@ COPY requirements.txt .
 
 # install unzip and curl
 RUN if [ "$FLAVOR" = "alpine" ]; then \
-      apk add --no-cache --update libpq-dev; \
+      apk add --no-cache --update gcc libpq-dev; \
     else \
       apt-get update && \
-      apt-get install -y libpq-dev && \
+      apt-get install -y gcc libpq-dev && \
       rm -rf /var/lib/apt/lists/* ; \
     fi
 
