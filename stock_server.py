@@ -16,7 +16,7 @@ import math
 
 api = Flask(__name__)
 logger = logging.getLogger(__name__)
-logging.basicConfig(filename='stock_server_app.log', level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 dateformat:str='%F %T.%f' #  "%B %d, %Y"
 resp_header = {'ContentType':'application/json'}
 
