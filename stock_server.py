@@ -113,6 +113,10 @@ if session.query(Country).count() == 0:
 
 
 def get_stock_by_isin(isin:str)->type[Stock]|None:
+    # simulate crash. id is None so should raise, and (being out of except), shall result in http status code 500
+    if 'A' in isin:
+        return session.query(Stock).filter(Stock.isin == id).first()
+
     try:
         st = session.query(Stock).filter(Stock.isin == isin).first()
         if st is None:
@@ -169,8 +173,8 @@ def make_stocks(qty: int = 0) -> list[dict]:
 
 
 def get_stock_dict(s:type[Stock]) -> dict:
+    # make 1:N query problem
     curr = session.query(Currency).filter(Currency.code == s.currency).first()
-
     cntr = session.query(Country).filter(Country.code == curr.country).first()
 
     st = {
@@ -212,7 +216,6 @@ def get_all_stocks():
 
 @api.route('/stocks/<id>', methods=['GET'])
 def get_stock(id: str):
-    # make 1:N query problem
     s = get_stock_by_isin(isin=id)
     if s is None:
         logger.error(f'GET STOCK: {get_timestamp()}: stock {id} is not found')
