@@ -15,8 +15,8 @@ import logging
 import math
 
 api = Flask(__name__)
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+#logger = logging.getLogger(__name__)
+# logging.basicConfig(level=logging.INFO)
 dateformat:str='%F %T.%f' #  "%B %d, %Y"
 resp_header = {'ContentType':'application/json'}
 
@@ -28,6 +28,13 @@ db_prt:str|None = os.getenv("DBPORT")
 db_dbn:str|None = os.getenv("DB_NAME")
 init_st:str|None = os.getenv("INITSTOCKS")
 max_st:str|None = os.getenv("MAXSTOCKS")
+log_dest:str|None = os.getenv("LOG_DEST")
+crash_sim:str|None = os.getenv("CRASH_SIM")
+
+if log_dest is None or log_dest == 'screen':
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+else:
+    logging.basicConfig(filename=f'{log_dest}_srv.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # failback to defaults if settings are not set (useful for running on dev machines)
 if db_usr is None:
@@ -86,7 +93,7 @@ def get_timestamp()->str:
     return datetime.datetime.now().strftime(dateformat)[:-3]
 
 if session.query(Currency).count() == 0:
-    logger.error(f'CURRENCY MAKER: {get_timestamp()}: no currencies in the DB. creating currencies')
+    logging.error(f'CURRENCY MAKER: {get_timestamp()}: no currencies in the DB. creating currencies')
     for c in data_dict.currencies:
         session.execute(db.insert(Currency),
                         [
@@ -100,7 +107,7 @@ if session.query(Currency).count() == 0:
 
 
 if session.query(Country).count() == 0:
-    logger.error(f'COUNTRY MAKER: {get_timestamp()}: no countries in the DB. creating countries')
+    logging.error(f'COUNTRY MAKER: {get_timestamp()}: no countries in the DB. creating countries')
     for c in data_dict.countries:
         session.execute(db.insert(Country),
                         [
@@ -114,18 +121,18 @@ if session.query(Country).count() == 0:
 
 def get_stock_by_isin(isin:str)->type[Stock]|None:
     # simulate crash. id is None so should raise, and (being out of except), shall result in http status code 500
-    if 'A' in isin:
+    if crash_sim is not None and crash_sim == 'true' and 'A' in isin:
         return session.query(Stock).filter(Stock.isin == id).first()
 
     try:
         st = session.query(Stock).filter(Stock.isin == isin).first()
         if st is None:
-            logger.error(f'STOCK EXISTS: {get_timestamp()}: stock {isin} does not exist')
+            logging.error(f'STOCK EXISTS: {get_timestamp()}: stock {isin} does not exist')
         else:
-            logger.info(f'STOCK EXISTS: {get_timestamp()}: stock {isin} exists')
+            logging.info(f'STOCK EXISTS: {get_timestamp()}: stock {isin} exists')
         return st
     except NoResultFound:
-        logger.error(f'STOCK EXISTS: {get_timestamp()}: stock {isin} does not exist')
+        logging.error(f'STOCK EXISTS: {get_timestamp()}: stock {isin} does not exist')
         return None
 
 
@@ -150,7 +157,7 @@ def modify_stock(isin: str, stock: dict) -> dict:
 
 
 def make_stock(isin: str = None) -> dict:
-    logger.info(f'STOCK MAKER: {get_timestamp()}: making a random stock')
+    logging.info(f'STOCK MAKER: {get_timestamp()}: making a random stock')
     stock: dict = {}
     stock['isin'] = randstr(6) if isin is None else isin
     stock['name'] = randstr(random.randint(5, 11))
@@ -163,7 +170,7 @@ def make_stock(isin: str = None) -> dict:
 def make_stocks(qty: int = 0) -> list[dict]:
     if qty <= 0 or qty > max_stocks:
         qty = 100
-    logger.info(f'STOCKS MAKER: {get_timestamp()}: creating {qty} stocks')
+    logging.info(f'STOCKS MAKER: {get_timestamp()}: creating {qty} stocks')
     stocks: list[dict] = []
     for _ in range(0, qty):
         st = make_stock()
@@ -192,14 +199,14 @@ def get_stock_dict(s:type[Stock]) -> dict:
         }
     }
 
-    logger.info(f'DICT: {get_timestamp()}: jsoning stock {s.isin}')
+    logging.info(f'DICT: {get_timestamp()}: jsoning stock {s.isin}')
     return st
 
 @api.route('/stocks', methods=['GET'])
 def get_all_stocks():
     if session.query(Stock).count() == 0:
         num_stocks:int=init_stocks
-        logger.warning(f'GET ALL STOCKS: {get_timestamp()}: no stocks. creating random {num_stocks} stocks')
+        logging.warning(f'GET ALL STOCKS: {get_timestamp()}: no stocks. creating random {num_stocks} stocks')
         make_stocks(qty=num_stocks)
     else:
         hw_simulator()
@@ -210,7 +217,7 @@ def get_all_stocks():
     json_stocks:list[dict] = []
     for s in stocks:
         json_stocks.append(get_stock_dict(s))
-        logger.info(f'GET ALL STOCKS: {get_timestamp()}: jsoning stock {s.isin} to return')
+        logging.info(f'GET ALL STOCKS: {get_timestamp()}: jsoning stock {s.isin} to return')
     return json.dumps(json_stocks), 200, resp_header
 
 
@@ -218,9 +225,9 @@ def get_all_stocks():
 def get_stock(id: str):
     s = get_stock_by_isin(isin=id)
     if s is None:
-        logger.error(f'GET STOCK: {get_timestamp()}: stock {id} is not found')
+        logging.error(f'GET STOCK: {get_timestamp()}: stock {id} is not found')
         return json.dumps({'message': f'stock {id} is not found'}), 404, resp_header
-    logger.info(f'GET STOCK: {get_timestamp()}: jsoning stock {s.isin} to return')
+    logging.info(f'GET STOCK: {get_timestamp()}: jsoning stock {s.isin} to return')
     return json.dumps(get_stock_dict(s)), 200, resp_header
 
 @api.route('/stocks', methods=['POST'])
@@ -228,7 +235,7 @@ def create_stock():
     new_stock = request.get_json()['stock']
 
     if check_stock_exists_by_isin(isin=new_stock['isin']):
-        logger.error(f'CREATE STOCK: {get_timestamp()}: stock {id} already exists')
+        logging.error(f'CREATE STOCK: {get_timestamp()}: stock {id} already exists')
         return json.dumps({'message': f'stock {id} already exists'}), 409, resp_header
 
     stock: dict = {
@@ -242,7 +249,7 @@ def create_stock():
     session.execute(db.insert(Stock),[stock])
 
     s = get_stock_by_isin(isin=new_stock['isin'])
-    logger.info(f'CREATE STOCK: {get_timestamp()}: jsoning stock {s.isin} to return')
+    logging.info(f'CREATE STOCK: {get_timestamp()}: jsoning stock {s.isin} to return')
     return json.dumps(get_stock_dict(s)), 200, resp_header
 
 
@@ -251,10 +258,10 @@ def update_stock(id):
     updating_stock = request.get_json()['stock']
 
     if not check_stock_exists_by_isin(isin=id):
-        logger.error(f'UPDATE STOCK: {get_timestamp()}: stock {id} is not found')
+        logging.error(f'UPDATE STOCK: {get_timestamp()}: stock {id} is not found')
         return json.dumps({'message': f'stock {id} is not found'}), 404, resp_header
 
-    logger.info(f'UPDATE STOCK: {get_timestamp()}: updating stock {id}')
+    logging.info(f'UPDATE STOCK: {get_timestamp()}: updating stock {id}')
     session.execute(
         db.update(Stock).where(Stock.isin == id).values(
             name = updating_stock['name'],
@@ -264,17 +271,17 @@ def update_stock(id):
         )
     )
     s = get_stock_by_isin(isin=id)
-    logger.info(f'UPDATE STOCK: {get_timestamp()}: jsoning stock {s.isin} to return')
+    logging.info(f'UPDATE STOCK: {get_timestamp()}: jsoning stock {s.isin} to return')
     return json.dumps(get_stock_dict(s)), 200, resp_header
 
 
 @api.route('/stocks/<id>', methods=['DELETE'])
 def delete_stock(id: str):
     if not check_stock_exists_by_isin(isin=id):
-        logger.error(f'DELETE STOCK: {get_timestamp()}: stock {id} is not found')
+        logging.error(f'DELETE STOCK: {get_timestamp()}: stock {id} is not found')
         return json.dumps({'message': f'stock {id} is not found'}), 404, resp_header
 
-    logger.warning(f'DELETE STOCK: {get_timestamp()}: deleting stock {id}')
+    logging.warning(f'DELETE STOCK: {get_timestamp()}: deleting stock {id}')
     session.execute(db.delete(Stock).where(Stock.isin == id))
     return json.dumps({'message': f'stock {id} is deleted'}), 200, resp_header
 
@@ -284,16 +291,16 @@ def toggle_hard_work():
     updating_stock = request.get_json()
     global simulate_hard_work
     simulate_hard_work = updating_stock['hw']
-    logger.info(f'HARDWORK TOGGLE: {get_timestamp()}: Setting HW: {simulate_hard_work}')
+    logging.info(f'HARDWORK TOGGLE: {get_timestamp()}: Setting HW: {simulate_hard_work}')
     return json.dumps({'message': f'Hard Work is set to {simulate_hard_work}'}), 200, resp_header
 
 
 def hw_simulator():
     if not simulate_hard_work:
-        logger.info(f'HARDWORKER: {get_timestamp()}: No HW')
+        logging.info(f'HARDWORKER: {get_timestamp()}: No HW')
         return
     stocks = session.query(Stock).all()
-    logger.error(f'HARDWORKER: {get_timestamp()}: Working Hard...')
+    logging.error(f'HARDWORKER: {get_timestamp()}: Working Hard...')
     prices:list=[]
     for s in stocks:
         new_price = math.sqrt(math.sqrt(s.price * s.price * s.price))
@@ -311,7 +318,7 @@ def hw_simulator():
         prices.append(math.sqrt(math.sqrt(new_price * s.price * s.price)))
         #### END OF HARDWORK BLOCK
 
-        logger.info(f'HARDWORKER: {get_timestamp()}: Stock {s.isin} price has changed from {s.price} to {new_price}')
+        logging.info(f'HARDWORKER: {get_timestamp()}: Stock {s.isin} price has changed from {s.price} to {new_price}')
         session.execute(
             db.update(Stock).where(Stock.isin == s.isin).values(
                 price = new_price,
@@ -322,5 +329,5 @@ def hw_simulator():
 
 if __name__ == '__main__':
     port:int=8080
-    logger.info(f'INIT: {get_timestamp()}: starting server on port {port}')
+    logging.info(f'INIT: {get_timestamp()}: starting server on port {port}')
     api.run(host="0.0.0.0", port=port)
