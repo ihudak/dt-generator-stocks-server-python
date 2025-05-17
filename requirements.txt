@@ -1,5 +1,5 @@
 blinker==1.8.2
-certifi==2024.7.4
+certifi==2023.5.7
 charset-normalizer==3.3.2
 click==8.1.7
 colorama==0.4.6
@@ -7,14 +7,14 @@ Deprecated==1.2.14
 Flask==3.0.3
 googleapis-common-protos==1.63.2
 greenlet==3.2.2
-idna==3.7
+idna==3.6
 importlib_metadata==7.1.0
 itsdangerous==2.2.0
 Jinja2==3.1.4
 MarkupSafe==2.1.5
 protobuf==5.29.4
 psycopg2==2.9.10
-requests==2.32.3
+requests==2.32.2
 SQLAlchemy==2.0.40
 typing_extensions==4.12.2
 urllib3==2.2.2

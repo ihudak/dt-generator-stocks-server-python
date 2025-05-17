@@ -32,6 +32,19 @@ spec:
           envFrom:
             - configMapRef:
                 name: stocks-configmap
+          env:
+            - name: DT_RELEASE_VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['app.kubernetes.io/version']
+            - name: DT_RELEASE_BUILD_VERSION
+              value: "2025-05-16-20:03:11"
+            - name: SERVICE_NAME
+              value: StocksClient
+            - name: SERVICE_FULL_NAME
+              value: "$(APP_NAME).$(SERVICE_NAME).$(SVC_SUFFIX)"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "dt.security_context=$(SECURITY_CONTEXT),dt.cost.costcenter=$(COST_CENTER),dt.cost.product=$(COST_PRODUCT),my.resource.attribute=$(GIT_REPO)"
           resources:
             limits:
               cpu: 300m
