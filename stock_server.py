@@ -32,9 +32,9 @@ log_dest:str|None = os.getenv("LOG_DEST")
 crash_sim:str|None = os.getenv("CRASH_SIM")
 
 if log_dest is None or log_dest == 'screen':
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s', encoding='utf-8')
 else:
-    logging.basicConfig(filename=f'{log_dest}_srv.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename=f'{log_dest}_srv.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s', encoding='utf-8')
 
 # failback to defaults if settings are not set (useful for running on dev machines)
 if db_usr is None:
