@@ -19,5 +19,5 @@ data:
   COST_CENTER: "StockExchange"
   COST_PRODUCT: "Stocks"
   GIT_REPO: "https://github.com/ihudak/dt-generator-stocks-server-python/"
-  LOG_DEST: "/var/log/python_stocks" # screen or file
-  CRASH_SIM: "true"
+  LOG_DEST: "stocks_py" # screen or file
+  CRASH_SIM: "false"
