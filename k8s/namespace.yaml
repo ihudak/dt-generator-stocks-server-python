@@ -3,11 +3,11 @@ apiVersion: v1
 metadata:
   name: stocks
   annotations:
-    metadata.dynatrace.com/boo: foo
+    metadata.dynatrace.com/boo: Books_and_Stocks
     metadata.dynatrace.com/my.annotation: custom_cost_center
     metadata.dynatrace.com/dt.cost.costcenter: fixed_cost_center
     metadata.dynatrace.com/dt.security_context: fixed_security
-    mystuff/my.annotation: ann1
+    mystuff/my.annotation: FinDept
   labels:
     name: stocks
-    mystuff/my.label: lab2
+    mystuff/my.label: Prod

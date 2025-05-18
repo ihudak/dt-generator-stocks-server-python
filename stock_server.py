@@ -30,6 +30,8 @@ init_st:str|None = os.getenv("INITSTOCKS")
 max_st:str|None = os.getenv("MAXSTOCKS")
 log_dest:str|None = os.getenv("LOG_DEST")
 crash_sim:str|None = os.getenv("CRASH_SIM")
+crash_sim = '0' if crash_sim is None or crash_sim == 'false' else crash_sim
+crash_sim = '100' if crash_sim is not None and crash_sim == 'true' else crash_sim
 
 if log_dest is None or log_dest == 'screen':
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s', encoding='utf-8')
@@ -49,6 +51,7 @@ if db_dbn is None:
 
 init_stocks:int=10 if init_st is None else int(init_st)
 max_stocks:int=100000 if max_st is None else int(max_st)
+crash_prob:int=0 if crash_sim is None or crash_sim == 'false' else int(crash_sim)
 
 # starting without hardwork simulator
 simulate_hard_work:bool=False
@@ -121,7 +124,8 @@ if session.query(Country).count() == 0:
 
 def get_stock_by_isin(isin:str)->type[Stock]|None:
     # simulate crash. id is None so should raise, and (being out of except), shall result in http status code 500
-    if crash_sim is not None and crash_sim == 'true' and 'A' in isin:
+    do_crash:bool = random.randint(0, 99) < crash_prob
+    if do_crash and 'A' in isin:
         return session.query(Stock).filter(Stock.isin == id).first()
 
     try:
