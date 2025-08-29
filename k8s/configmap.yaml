@@ -10,7 +10,7 @@ data:
   CREATESTOCKS: "100"
   INITSTOCKS: "10000"
   MAXSTOCKS: "100000"
-  HARDWORK_INTENSITY: "100"
+  HARDWORK_INTENSITY: "10"
   DBSRV: "postgres-svc"
   DBPORT: "5432"
   APP_NAME: "Stock Management"
@@ -20,4 +20,4 @@ data:
   COST_PRODUCT: "Stocks"
   GIT_REPO: "https://github.com/ihudak/dt-generator-stocks-server-python/"
   LOG_DEST: "screen" # screen or file
-  CRASH_SIM: "20"
+  CRASH_SIM: "40"

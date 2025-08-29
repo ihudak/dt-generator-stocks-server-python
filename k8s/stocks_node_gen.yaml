@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejsgen
+  namespace: stocks
+  labels:
+    app: nodejsgen
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nodejsgen
+  template:
+    metadata:
+      annotations:
+        metrics.dynatrace.com/path: /stats/prometheus
+        metrics.dynatrace.com/port: "15020"
+        metrics.dynatrace.com/scrape: "true"
+        metrics.dynatrace.com/secure: "false"
+      namespace: stocks
+      labels:
+        app: nodejsgen
+        app.kubernetes.io/version: 1.5.5
+        app.kubernetes.io/part-of: StocksManagement
+    spec:
+      containers:
+        - name: nodejsgen
+          image: ghcr.io/ihudak/nodejs-datagenerator:latest
+          ports:
+            - containerPort: 3000
+            - containerPort: 5005
+#          envFrom:
+#            - configMapRef:
+#                name: stocks-configmap
+          env:
+            - name: SRVURL
+              value: "stocks-server-svc:80"
+            - name: NUMLOOPS
+              value: "10"
+          resources:
+            limits:
+              cpu: 300m
+              memory: 768Mi
+            requests:
+              cpu: 300m
+              memory: 768Mi
+      initContainers:
+        - name: stockscaller
+          image: alpine:latest
+          restartPolicy: Always
+          resources:
+            limits:
+              cpu: 100m
+              memory: 384Mi
+            requests:
+              cpu: 100m
+              memory: 384Mi
+          command:
+            - sh
+            - -c
+            - |
+              apk add --no-cache curl && \
+              while true; do
+                echo "$(date +"%Y-%m-%d-%H:%M:%S")"
+                echo "Waiting for 15 seconds..."
+                sleep 15
+                echo $(curl -s http://stocks-nodejsgen-svc/test)  
+              done
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stocks-nodejsgen-svc
+  namespace: stocks
+spec:
+  selector:
+    app: nodejsgen
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 3000
