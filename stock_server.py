@@ -126,7 +126,7 @@ def get_stock_by_isin(isin:str)->type[Stock]|None:
     # simulate crash. id is None so should raise, and (being out of except), shall result in http status code 500
     do_crash:bool = random.randint(0, 99) < crash_prob
     if do_crash and 'A' in isin:
-        return session.query(Stock).filter(Stock.isin == id).first()
+        return session.query(Stock).filter(Stock.isin == isin).first()
 
     try:
         st = session.query(Stock).filter(Stock.isin == isin).first()
