@@ -8,7 +8,7 @@ COPY requirements.txt .
 
 # install unzip and curl
 RUN if [ "$FLAVOR" = "alpine" ]; then \
-      apk add --no-cache --update gcc libpq-dev musl-dev; \
+      apk add --no-cache --update gcc libpq-dev musl-dev build-base; \
     else \
       apt-get update && \
       apt-get install -y gcc libpq-dev build-essential && \
