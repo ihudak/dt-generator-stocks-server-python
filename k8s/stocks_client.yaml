@@ -44,7 +44,7 @@ spec:
             - name: SERVICE_FULL_NAME
               value: "$(APP_NAME).$(SERVICE_NAME).$(SVC_SUFFIX)"
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: "dt.security_context=$(SECURITY_CONTEXT),dt.cost.costcenter=$(COST_CENTER),dt.cost.product=$(COST_PRODUCT),my.resource.attribute=$(GIT_REPO)"
+              value: "dt.security_circle=$(SECURITY_CIRCLE),dt.management_zone=$(MANAGEMENT_ZONE),dt.owner_team=$(OWNER_TEAM),dt.owner=$(OWNER),dt.cost.costcenter=$(COST_CENTER),dt.cost.product=$(COST_PRODUCT),my.resource.attribute=$(GIT_REPO)"
           resources:
             limits:
               cpu: 300m
